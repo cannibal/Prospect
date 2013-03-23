@@ -262,7 +262,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $files = $this->getMock('Versionable\Prospect\File\CollectionInterface', array(
             'isEmpty',
             'toString',
-            'setBoundary'
+            'setBoundary',
+            'add'
         ));
         $files->expects($this->any())
               ->method('isEmpty')
