@@ -4,12 +4,11 @@ namespace Versionable\Prospect\File;
 
 interface FileInterface
 {
-
-  public function __construct($name, $value, $type);
-
-  public function __toString();
-
   public function toString();
+
+  public function getName();
+
+  public function getValue();
 
   public function getContent();
 
