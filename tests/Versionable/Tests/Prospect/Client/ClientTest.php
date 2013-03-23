@@ -63,6 +63,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 
     $adapter = $this->getMock('Versionable\Prospect\Adapter\AdapterInterface');
     $adapter->expects($this->any())->method('call')->will($this->returnValue($response));
+    $adapter->expects($this->atLeastOnce())->method('initialise');
     $this->object->setAdapter($adapter);
 
     $this->assertEquals($response, $this->object->send($request, $response));

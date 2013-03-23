@@ -32,11 +32,11 @@ class CurlFileTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Versionable\Prospect\Adapter\CurlFile::initialize
+     * @covers Versionable\Prospect\Adapter\CurlFile::initialise
      */
-    public function testInitialize()
+    public function testInitialise()
     {
-        $this->object->initialize();
+        $this->object->initialise();
 
         $this->assertAttributeInternalType('resource', 'handle', $this->object);
     }

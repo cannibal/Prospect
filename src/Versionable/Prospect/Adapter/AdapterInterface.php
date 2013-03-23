@@ -15,5 +15,7 @@ interface AdapterInterface
    */
     public function call(RequestInterface $request, ResponseInterface $response);
 
+    public function initialise();
+
     public function setOption($name, $value);
 }

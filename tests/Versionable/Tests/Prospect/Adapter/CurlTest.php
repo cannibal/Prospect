@@ -34,19 +34,13 @@ class CurlTest extends \PHPUnit_Framework_TestCase
     
   }
 
-  /**
-   * @todo Implement testInitialize().
-   */
-  public function testInitialize()
+  public function testInitialise()
   {
-    $this->object->initialize();
+    $this->object->initialise();
 
     $this->assertAttributeInternalType('resource', 'handle', $this->object);
   }
 
-  /**
-   * @todo Implement testCall().
-   */
   public function testCall()
   {
     // Remove the following lines when you implement this test.

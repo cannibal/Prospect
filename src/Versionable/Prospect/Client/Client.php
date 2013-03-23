@@ -33,7 +33,9 @@ class Client implements ClientInterface
 
   public function send(RequestInterface $request, ResponseInterface $response)
   {
-    $response = $this->adapter->call($request, $response);
+    $adapter = $this->getAdapter();
+    $adapter->initialise();
+    $response = $adapter->call($request, $response);
 
     return $response;
   }

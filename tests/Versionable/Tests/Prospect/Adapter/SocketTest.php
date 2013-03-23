@@ -32,11 +32,11 @@ class SocketTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Versionable\Prospect\Adapter\Socket::initialize
+     * @covers Versionable\Prospect\Adapter\Socket::initialise
      */
-    public function testInitialize()
+    public function testInitialise()
     {
-        $this->object->initialize();
+        $this->object->initialise();
 
         $this->assertArrayHasKey('Content-Type', $this->readAttribute($this->object, 'options'));
     }
