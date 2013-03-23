@@ -20,16 +20,20 @@ class FileTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new File;
+        $this->object = new File();
     }
 
-    /**
-     * @covers Versionable\Prospect\Response\File::__construct
-     * @covers Versionable\Prospect\Response\File::getFilename
-     */
+   /**
+    * @covers Versionable\Prospect\Response\File::__construct
+    * @covers Versionable\Prospect\Response\File::getFilename
+    */
     public function testGetFilename()
     {
-        $this->assertNotNull($this->object->getFilename());
+      $filename = $this->object->getFilename();
+      $this->assertNotNull($filename);
+
+      $test = new \SplFileInfo($filename);
+      $this->assertFalse($test->isFile());
     }
 
     /**
