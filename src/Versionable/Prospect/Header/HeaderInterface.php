@@ -4,5 +4,9 @@ namespace Versionable\Prospect\Header;
 
 interface HeaderInterface
 {
-  public function __toString();
+  public function getName();
+
+  public function getValue();
+
+  public function toString();
 }
