@@ -22,7 +22,7 @@ class AdapterAbstractTest extends \PHPUnit_Framework_TestCase
    */
   protected function setUp()
   {
-    $this->object = $this->getMockForAbstractClass('Versionable\Prospect\Adapter\AdapterAbstract');
+    $this->object = $this->getMockForAbstractClass('Versionable\\Prospect\\Adapter\\AdapterAbstract');
   }
 
   /**
@@ -34,17 +34,29 @@ class AdapterAbstractTest extends \PHPUnit_Framework_TestCase
     
   }
 
-  /**
-   * @todo Implement testSetOption().
-   */
   public function testSetOption()
   {
     $this->object->setOption('foo', 'bar');
-    
-    $attrs = $this->readAttribute($this->object, 'options');
-    
-    $this->assertEquals('bar', $attrs['foo']);
+    $actual = $this->object->getOption('foo');
+
+    $this->assertEquals('bar', $actual);
   }
 
+  public function testHasOption()
+  {
+    $this->assertFalse($this->object->hasOption('foo'));
+    $this->object->setOption('foo', 'bar');
+    $this->assertTrue($this->object->hasOption('foo'));
+    $actual = $this->object->getOption('foo');
+
+    $this->assertEquals('bar', $actual);
+  }
+
+  public function testGetNonExistentOption()
+  {
+    $this->setExpectedException('\\Versionable\\Prospect\\Adapter\\Exception\\AdapterAbstractException');
+
+    $actual = $this->object->getOption('foo');
+  }
 }
 
