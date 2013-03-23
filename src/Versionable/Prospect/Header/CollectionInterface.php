@@ -12,4 +12,9 @@ interface CollectionInterface
    * @return array
    */
   public function toArray();
+
+  /**
+   * @return boolean
+   */
+  public function isEmpty();
 }
