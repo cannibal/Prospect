@@ -6,5 +6,8 @@ interface CollectionInterface
 {
   public function toString();
 
+  /**
+   * @return array
+   */
   public function toArray();
 }
