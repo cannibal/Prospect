@@ -4,20 +4,13 @@ namespace Versionable\Prospect\Adapter;
 
 use Versionable\Prospect\Request\RequestInterface;
 use Versionable\Prospect\Response\ResponseInterface;
+use Versionable\Prospect\Parameter\ParameterInterface;
+use Versionable\Prospect\File\FileInterface;
 
-class Curl extends AdapterAbstract implements AdapterInterface
+class Curl extends AdapterAbstract
 {
-  /**
-   *
-   * @var resource Curl resource
-   */
-  protected $handle = null;
-
-  /**
-   *
-   * @var array Curl options
-   */
-  protected $options = array();
+  /** @var resource Curl resource */
+  private $handle = null;
 
   public function __construct()
   {
@@ -26,79 +19,140 @@ class Curl extends AdapterAbstract implements AdapterInterface
     }
   }
 
-  public function initialize()
+  /**
+   * This function initialised the curl filehandle
+   */
+  protected function initialiseHandle()
   {
     $this->handle = curl_init();
+  }
+
+  protected function getHandle()
+  {
+    return $this->handle;
+  }
+
+  public function initialise()
+  {
+    $this->initialiseHandle();
+
     $this->setOption(\CURLOPT_RETURNTRANSFER, true);
     $this->setOption(\CURLOPT_NOBODY, null);
     $this->setOption(\CURLOPT_FOLLOWLOCATION, true);
     $this->setOption(\CURLOPT_MAXREDIRS, 5);
     $this->setOption(\CURLOPT_HEADER, true);
+  }
 
-    foreach ($this->options as $name => $value) {
-      \curl_setopt($this->handle, $name, $value);
+  protected function setCurlOptions()
+  {
+    foreach($this->getOptions() as $option => $value){
+      $this->setCurlOption($option, $value);
     }
   }
 
-  public function call(RequestInterface $request, ResponseInterface $response)
+  protected function setCurlOption($option, $value)
   {
-    $this->initialize();
+    \curl_setopt($this->getHandle(), $option, $value);
+  }
 
-    \curl_setopt($this->handle, CURLOPT_URL, $request->getUrl());
+  protected function setUrl(RequestInterface $request)
+  {
+    $this->setOption(\CURLOPT_URL, $request->getUrl());
+    $this->setOption(\CURLOPT_PORT, $request->getPort());
+  }
 
+  protected function setRequestMethod(RequestInterface $request)
+  {
     if ($request->getMethod() == 'GET') {
-      \curl_setopt($this->handle, \CURLOPT_HTTPGET, true);
+      $this->setOption(\CURLOPT_HTTPGET, true);
+
     } elseif ($request->getMethod() == 'POST') {
-      \curl_setopt($this->handle, \CURLOPT_POST, true);
+      $this->setOption(\CURLOPT_POST, true);
+
     } else {
-      \curl_setopt($this->handle, \CURLOPT_CUSTOMREQUEST, $request->getMethod());
+      $this->setOption(\CURLOPT_CUSTOMREQUEST, $request->getMethod());
     }
+  }
 
+  protected function setFields(RequestInterface $request)
+  {
     $post = array();
-    $files = array();
-
+    /** @var ParameterInterface $param */
     foreach ($request->getParameters() as $param) {
       $post[$param->getName()] = $param->getValue();
     }
 
+    $files = array();
+    /** @var FileInterface $file */
     foreach ($request->getFiles() as $file) {
       $files[$file->getName()] = '@' . $file->getValue() . ';type=' . $file->getType();
     }
 
-    if ($request->getMethod() == 'POST' ||
-        $request->getMethod() == 'PUT'  ||
-        $request->getMethod() == 'PATCH')
-    {
-      // Files and any parameters - note body is not used
-      if (!empty($files)) {
-        $body = array_merge($post, $files);
-      }
+    switch ($request->getMethod()) {
+      case 'POST':
+      case 'PUT':
+      case 'PATCH':
+        // Files and any parameters - note body is not used
+        if (!empty($files)) {
+          $body = array_merge($post, $files);
+        } // Only parameters
+        elseif (!empty($post)) {
+          $body = http_build_query($post);
+        } else {
+          $body = $request->getBody();
+        }
 
-      // Only parametsrs
-      elseif (!empty($post)) {
-        $body = http_build_query($post);
-      } else {
-        $body = $request->getBody();
-      }
-
-      \curl_setopt ($this->handle, \CURLOPT_POSTFIELDS, $body);
+        $this->setOption(\CURLOPT_POSTFIELDS, $body);
+        break;
     }
+  }
 
-    if (!$request->getCookies()->isEmpty()) {
-      \curl_setopt($this->handle, \CURLOPT_COOKIE, $request->getCookies()->toString());
-    }
 
+  protected function setHeaders(RequestInterface $request)
+  {
     if (!$request->getHeaders()->isEmpty()) {
-      \curl_setopt($this->handle, \CURLOPT_HTTPHEADER, $request->getHeaders()->toArray());
+      $this->setOption(\CURLOPT_HTTPHEADER, $request->getHeaders()->toArray());
     }
+  }
 
-    \curl_setopt($this->handle, \CURLOPT_PORT, $request->getPort());
+  protected function setCookies(RequestInterface $request)
+  {
+    if (!$request->getCookies()->isEmpty()) {
+      $this->setOption(\CURLOPT_COOKIE, $request->getCookies()->toString());
+    }
+  }
 
-    $returned = \curl_exec($this->handle);
+  /**
+   * This function executes the curl request
+   *
+   * @return mixed
+   */
+  protected function send(RequestInterface $request, ResponseInterface $response)
+  {
+    $this->setCurlOptions();
+
+    $returned =  \curl_exec($this->handle);
 
     if (!$returned) {
       throw new \RuntimeException('Error connecting to host: ' . $request->getUrl()->getHostname());
     }
+
+    return $returned;
+  }
+
+  public function call(RequestInterface $request, ResponseInterface $response)
+  {
+    $this->initialise();
+
+    $this->setUrl($request);
+    $this->setRequestMethod($request);
+
+    $this->setFields($request);
+
+    $this->setCookies($request);
+    $this->setHeaders($request);
+
+    $returned = $this->send($request, $response);
 
     $response->parse($returned);
 

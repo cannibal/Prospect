@@ -4,7 +4,7 @@ namespace Versionable\Prospect\Adapter;
 
 use Versionable\Prospect\Adapter\Exception\AdapterAbstractException;
 
-abstract class AdapterAbstract
+abstract class AdapterAbstract implements AdapterInterface
 {
   private $options = array();
 
